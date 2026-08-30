@@ -1,489 +1,795 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tebak Bom</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>🎮 Game Center</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #0d0d0d;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  padding: 24px 16px;
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d1a;--card:#161628;--card2:#1e1e35;
+  --acc:#7c3aed;--acc2:#a855f7;--acc3:#ec4899;
+  --txt:#e2e8f0;--muted:#64748b;--border:#2d2d4e;
+  --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;
 }
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',sans-serif;min-height:100dvh;overflow-x:hidden}
 
-h1 {
-  font-size: 2.2rem;
-  font-weight: 900;
-  letter-spacing: -1px;
-  margin-bottom: 2px;
-}
+/* NAV */
+#nav{display:flex;gap:6px;padding:10px 8px;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--border);scrollbar-width:none;position:sticky;top:0;z-index:99}
+#nav::-webkit-scrollbar{display:none}
+.nav-btn{flex-shrink:0;padding:7px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:.2s;white-space:nowrap}
+.nav-btn.active{background:var(--acc);color:#fff;border-color:var(--acc)}
 
-.subtitle {
-  font-size: 0.82rem;
-  color: #555;
-  margin-bottom: 22px;
-  letter-spacing: 0.5px;
-}
+/* SCREEN */
+.screen{display:none;padding:12px;max-width:420px;margin:0 auto}
+.screen.active{display:block}
 
-/* DIFFICULTY */
-.difficulty {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 22px;
-}
+/* CARD */
+.gcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
+.gtitle{font-size:15px;font-weight:700;margin-bottom:4px}
+.gsub{font-size:11px;color:var(--muted);margin-bottom:12px}
 
-.diff-btn {
-  padding: 7px 20px;
-  border-radius: 50px;
-  border: 1.5px solid #2a2a2a;
-  background: #111;
-  color: #555;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 600;
-  transition: all 0.18s;
-  letter-spacing: 0.3px;
-}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border-radius:10px;border:none;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;gap:6px}
+.btn-p{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff}
+.btn-p:active{transform:scale(.97)}
+.btn-d{background:var(--card2);color:var(--txt);border:1px solid var(--border)}
+.btn-g{background:linear-gradient(135deg,var(--green),#059669);color:#fff}
+.btn-r{background:linear-gradient(135deg,var(--red),#dc2626);color:#fff}
+.btn-y{background:linear-gradient(135deg,var(--yellow),#d97706);color:#fff}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-full{width:100%}
 
-.diff-btn.active {
-  border-color: #fff;
-  color: #fff;
-  background: #1e1e1e;
-}
+/* SCORE BADGE */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--card2);border:1px solid var(--border)}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 
-.diff-btn:hover:not(.active) {
-  border-color: #444;
-  color: #aaa;
-}
+/* ═══════════ 1. TEBAK BOM ═══════════ */
+#bom-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0}
+.bom-cell{aspect-ratio:1;border-radius:10px;background:var(--card2);border:2px solid var(--border);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;user-select:none}
+.bom-cell:active{transform:scale(.93)}
+.bom-cell.safe{background:#052e16;border-color:var(--green);color:var(--green)}
+.bom-cell.bomb{background:#450a0a;border-color:var(--red);animation:shake .3s}
+.bom-cell.revealed{cursor:default}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+#bom-msg{text-align:center;font-weight:700;font-size:14px;min-height:20px;margin-bottom:8px}
 
-/* SCOREBOARD */
-.scoreboard {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: #1a1a1a;
-  border: 1px solid #1a1a1a;
-  border-radius: 16px;
-  overflow: hidden;
-  margin-bottom: 24px;
-  width: 100%;
-  max-width: 420px;
-}
+/* ═══════════ 2. DINO ═══════════ */
+#dino-wrap{position:relative;border-radius:12px;overflow:hidden;margin-bottom:10px}
+#dino-c{display:block;width:100%;background:#16213e;border-radius:12px}
+#dino-overlay{position:absolute;inset:0;background:rgba(13,13,26,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:12px}
+#dino-overlay.hidden{display:none}
+#dino-overlay-icon{font-size:36px}
+#dino-overlay-title{font-size:16px;font-weight:700}
+#dino-overlay-score{color:var(--acc2);font-size:20px;font-weight:700;display:none}
 
-.score-cell {
-  background: #0d0d0d;
-  padding: 14px 10px;
-  text-align: center;
-}
+/* ═══════════ 3. GACHA ═══════════ */
+#slots{display:flex;gap:8px;justify-content:center;margin:14px 0}
+.slot-box{width:72px;height:72px;background:var(--card2);border:2px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:32px;transition:.1s}
+.slot-box.spin{animation:spinSlot .08s linear infinite}
+@keyframes spinSlot{0%{transform:rotateX(0)}100%{transform:rotateX(360deg)}}
+#gacha-result{text-align:center;min-height:24px;font-weight:700;font-size:14px;margin-bottom:10px}
+#gacha-coins{font-size:13px;color:var(--yellow);font-weight:700}
+.rarity-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;margin-left:6px}
+.r-common{background:#374151;color:#9ca3af}
+.r-rare{background:#1e3a8a;color:#93c5fd}
+.r-epic{background:#4c1d95;color:#c4b5fd}
+.r-legend{background:#78350f;color:#fcd34d}
 
-.score-cell:first-child { border-radius: 16px 0 0 0; }
-.score-cell:nth-child(4) { border-radius: 0 16px 0 0; }
-.score-cell:nth-child(5) { border-radius: 0 0 0 16px; }
-.score-cell:last-child { border-radius: 0 0 16px 0; }
+/* ═══════════ 4. TIC TAC TOE ═══════════ */
+#ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+.ttt-cell{aspect-ratio:1;background:var(--card2);border:2px solid var(--border);border-radius:12px;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ttt-cell:hover:not(.taken){background:var(--card);border-color:var(--acc)}
+.ttt-cell.taken{cursor:default}
+.ttt-cell.win-cell{background:#1e1b4b;border-color:var(--acc2)}
+#ttt-msg{text-align:center;font-size:13px;font-weight:600;min-height:20px;margin-bottom:8px}
 
-.score-label {
-  font-size: 0.6rem;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  margin-bottom: 6px;
-}
+/* ═══════════ 5. WORD GUESS ═══════════ */
+#word-display{letter-spacing:10px;font-size:22px;font-weight:700;text-align:center;margin:12px 0;font-family:monospace}
+#wrong-letters{color:var(--red);font-size:13px;min-height:20px;text-align:center;margin-bottom:8px;letter-spacing:4px}
+#hangman-svg{display:block;margin:0 auto 10px}
+#word-keyboard{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0}
+.key-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--card2);color:var(--txt);font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.key-btn:disabled{opacity:.3;cursor:default}
+.key-btn.used-wrong{background:#450a0a;border-color:var(--red);color:var(--red)}
+.key-btn.used-right{background:#052e16;border-color:var(--green);color:var(--green)}
 
-.score-value {
-  font-size: 1.5rem;
-  font-weight: 800;
-  line-height: 1;
-}
+/* ═══════════ 6. FLAPPY BIRD ═══════════ */
+#flappy-wrap{position:relative;border-radius:12px;overflow:hidden;margin-bottom:10px}
+#flappy-c{display:block;width:100%;border-radius:12px}
+#flappy-overlay{position:absolute;inset:0;background:rgba(13,13,26,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border-radius:12px}
+#flappy-overlay.hidden{display:none}
 
-.score-value.gold { color: #f0c040; }
-.score-value.green { color: #4ade80; }
-.score-value.red { color: #f87171; }
-.score-value.white { color: #fff; }
-
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 110px);
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.cell {
-  width: 110px;
-  height: 110px;
-  background: #111;
-  border: 1.5px solid #1f1f1f;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.6rem;
-  cursor: pointer;
-  transition: background 0.13s, border-color 0.13s, transform 0.1s;
-  user-select: none;
-  position: relative;
-}
-
-.cell-num {
-  position: absolute;
-  top: 7px;
-  left: 9px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #333;
-}
-
-.cell:not(.revealed):hover {
-  background: #1c1c1c;
-  border-color: #3a3a3a;
-  transform: scale(1.04);
-}
-
-.cell.revealed { cursor: default; }
-
-.cell.fruit {
-  background: #0f1f14;
-  border-color: #2a5c38;
-  animation: popIn 0.28s ease;
-}
-
-.cell.bomb {
-  background: #1f0d0d;
-  border-color: #7f2020;
-  animation: shake 0.35s ease;
-}
-
-.cell.dimmed {
-  opacity: 0.35;
-  animation: none;
-}
-
-@keyframes popIn {
-  0% { transform: scale(0.65); opacity: 0.2; }
-  70% { transform: scale(1.07); }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-5px); }
-  80% { transform: translateX(5px); }
-}
-
-/* BUTTON */
-.btn {
-  padding: 13px 36px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  background: #fff;
-  color: #0d0d0d;
-  letter-spacing: 0.3px;
-  transition: transform 0.13s, background 0.13s;
-}
-
-.btn:hover { transform: scale(1.04); background: #ddd; }
-
-/* OVERLAY */
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(6px);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.overlay.show { display: flex; }
-
-.modal {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 24px;
-  padding: 40px 44px;
-  text-align: center;
-  max-width: 380px;
-  width: 100%;
-  animation: popIn 0.3s ease;
-}
-
-.modal-emoji { font-size: 4rem; margin-bottom: 10px; line-height: 1; }
-.modal-title { font-size: 2rem; font-weight: 900; margin-bottom: 10px; letter-spacing: -0.5px; }
-.modal-roast {
-  font-size: 0.95rem;
-  color: #888;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  font-style: italic;
-}
-
-.modal-divider {
-  height: 1px;
-  background: #1f1f1f;
-  margin: 0 0 20px;
-}
-
-.modal-stats {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-bottom: 26px;
-}
-
-.mstat-label { font-size: 0.65rem; color: #444; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-.mstat-value { font-size: 1.3rem; font-weight: 800; }
+/* ═══════════ 7. MEMORY CARD ═══════════ */
+#mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.mem-card{aspect-ratio:1;border-radius:10px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .3s}
+.mem-card.flipped,.mem-card.matched{transform:rotateY(180deg)}
+.mem-card.matched .mem-back{background:#052e16;border-color:var(--green)}
+.mem-front,.mem-back{position:absolute;inset:0;border-radius:10px;display:flex;align-items:center;justify-content:center;backface-visibility:hidden}
+.mem-front{background:var(--card2);border:2px solid var(--border);font-size:24px}
+.mem-back{background:var(--acc);border:2px solid var(--acc2);transform:rotateY(180deg);font-size:24px}
+#mem-msg{text-align:center;font-size:13px;font-weight:600;min-height:20px;margin-bottom:8px}
+#mem-moves{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 
-<h1>💣 Tebak Bom</h1>
-<p class="subtitle">pilih kotak — buah atau meledak?</p>
-
-<div class="difficulty">
-  <button class="diff-btn active" onclick="setDiff('mudah', this)">😊 Mudah</button>
-  <button class="diff-btn" onclick="setDiff('normal', this)">😐 Normal</button>
-  <button class="diff-btn" onclick="setDiff('hard', this)">💀 Hard</button>
+<div id="nav">
+  <button class="nav-btn active" onclick="showGame('bom')">💣 Tebak Bom</button>
+  <button class="nav-btn" onclick="showGame('dino')">🦕 Dino</button>
+  <button class="nav-btn" onclick="showGame('gacha')">🎰 Gacha</button>
+  <button class="nav-btn" onclick="showGame('ttt')">⭕ Tic Tac</button>
+  <button class="nav-btn" onclick="showGame('word')">📝 Word</button>
+  <button class="nav-btn" onclick="showGame('flappy')">🐦 Flappy</button>
+  <button class="nav-btn" onclick="showGame('mem')">🃏 Memory</button>
 </div>
 
-<div class="scoreboard">
-  <div class="score-cell">
-    <div class="score-label">Total Skor</div>
-    <div class="score-value gold" id="score">0</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">Win Streak</div>
-    <div class="score-value green" id="streak">0</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">Menang</div>
-    <div class="score-value white" id="wins">0</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">Kalah</div>
-    <div class="score-value red" id="losses">0</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">💣 Bom</div>
-    <div class="score-value white" id="bomb-count">1</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">🍎 Sisa</div>
-    <div class="score-value white" id="fruit-left">11</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">Best Streak</div>
-    <div class="score-value gold" id="best-streak">0</div>
-  </div>
-  <div class="score-cell">
-    <div class="score-label">Ronde</div>
-    <div class="score-value white" id="round">1</div>
+<!-- ═══ 1. TEBAK BOM ═══ -->
+<div id="screen-bom" class="screen active">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">💣 Tebak Bom</div><div class="gsub">Hindari sel yang ada bom!</div></div>
+      <div><span class="badge">💎 <span id="bom-score">0</span></span></div>
+    </div>
+    <div id="bom-msg">Pilih tingkat kesulitan</div>
+    <div id="bom-grid"></div>
+    <div class="btn-row">
+      <button class="btn btn-g" onclick="initBom(3)">😊 Easy</button>
+      <button class="btn btn-y" onclick="initBom(6)">😤 Medium</button>
+      <button class="btn btn-r" onclick="initBom(10)">💀 Hard</button>
+    </div>
   </div>
 </div>
 
-<div class="grid" id="grid"></div>
-
-<button class="btn" onclick="startGame()">🔄 Main Lagi</button>
-
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-emoji" id="modal-emoji"></div>
-    <div class="modal-title" id="modal-title"></div>
-    <div class="modal-roast" id="modal-roast"></div>
-    <div class="modal-divider"></div>
-    <div class="modal-stats">
-      <div>
-        <div class="mstat-label">Skor</div>
-        <div class="mstat-value" id="modal-score">0</div>
-      </div>
-      <div>
-        <div class="mstat-label">Streak</div>
-        <div class="mstat-value" id="modal-streak">0</div>
-      </div>
-      <div>
-        <div class="mstat-label">Buah Dapat</div>
-        <div class="mstat-value" id="modal-fruits">0</div>
+<!-- ═══ 2. DINO ═══ -->
+<div id="screen-dino" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">🦕 Dino Runner</div><div class="gsub">Tap untuk lompat!</div></div>
+      <div><span class="badge">🏆 <span id="dino-best">0</span></span></div>
+    </div>
+    <div id="dino-wrap">
+      <canvas id="dino-c" height="150"></canvas>
+      <div id="dino-overlay">
+        <div id="dino-overlay-icon">🦕</div>
+        <div id="dino-overlay-title">TAP UNTUK MULAI</div>
+        <div id="dino-overlay-score"></div>
+        <button class="btn btn-p" id="dino-start-btn" onclick="startDino()">▶ MAIN</button>
       </div>
     </div>
-    <button class="btn" onclick="closeModal(); startGame()">🎮 Main Lagi</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)" id="dino-speed-label">SPEED 1.0x</span>
+      <span class="badge">Score: <span id="dino-score">0</span></span>
+    </div>
+    <button class="btn btn-p btn-full" id="dino-jump-btn" ontouchstart="e=>{e.preventDefault();dinoJump()}" onclick="dinoJump()">▲ JUMP</button>
+  </div>
+</div>
+
+<!-- ═══ 3. GACHA ═══ -->
+<div id="screen-gacha" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">🎰 Gacha Slot</div><div class="gsub">Kumpulkan item langka!</div></div>
+      <div id="gacha-coins">🪙 1000</div>
+    </div>
+    <div id="slots">
+      <div class="slot-box" id="s0">🎲</div>
+      <div class="slot-box" id="s1">🎲</div>
+      <div class="slot-box" id="s2">🎲</div>
+    </div>
+    <div id="gacha-result">— Tekan SPIN untuk mulai —</div>
+    <div id="gacha-log" style="max-height:90px;overflow-y:auto;margin-bottom:10px;font-size:11px;color:var(--muted)"></div>
+    <div class="btn-row">
+      <button class="btn btn-p" style="flex:1" onclick="doSpin(10)">🎰 Spin x1 <span style="opacity:.7;font-size:11px">(10🪙)</span></button>
+      <button class="btn btn-y" style="flex:1" onclick="doSpin10()">⚡ Spin x10 <span style="opacity:.7;font-size:11px">(90🪙)</span></button>
+    </div>
+  </div>
+  <div class="gcard">
+    <div class="gtitle" style="margin-bottom:8px">🎒 Koleksi</div>
+    <div id="gacha-collection" style="font-size:12px;color:var(--muted)">Belum ada item</div>
+  </div>
+</div>
+
+<!-- ═══ 4. TIC TAC TOE ═══ -->
+<div id="screen-ttt" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">⭕ Tic Tac Toe</div><div class="gsub">Lawan komputer</div></div>
+      <div style="font-size:11px;text-align:right;color:var(--muted)">
+        W:<span id="ttt-w" style="color:var(--green);font-weight:700">0</span>
+        D:<span id="ttt-d" style="color:var(--yellow);font-weight:700">0</span>
+        L:<span id="ttt-l" style="color:var(--red);font-weight:700">0</span>
+      </div>
+    </div>
+    <div id="ttt-msg">Giliran kamu (❌)</div>
+    <div id="ttt-board"></div>
+    <button class="btn btn-d btn-full" onclick="initTTT()">🔄 Main Lagi</button>
+  </div>
+</div>
+
+<!-- ═══ 5. WORD GUESS ═══ -->
+<div id="screen-word" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">📝 Tebak Kata</div><div class="gsub">Tebak kata sebelum digantung!</div></div>
+      <div><span class="badge">🏆 <span id="word-score">0</span></span></div>
+    </div>
+    <svg id="hangman-svg" width="120" height="100" viewBox="0 0 120 100">
+      <line x1="10" y1="95" x2="110" y2="95" stroke="#4b5563" stroke-width="3"/>
+      <line x1="30" y1="95" x2="30" y2="5" stroke="#4b5563" stroke-width="3"/>
+      <line x1="30" y1="5" x2="70" y2="5" stroke="#4b5563" stroke-width="3"/>
+      <line x1="70" y1="5" x2="70" y2="18" stroke="#4b5563" stroke-width="3"/>
+      <circle id="h-head" cx="70" cy="26" r="8" stroke="var(--red)" stroke-width="2.5" fill="none" opacity="0"/>
+      <line id="h-body" x1="70" y1="34" x2="70" y2="62" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="h-la" x1="70" y1="42" x2="55" y2="55" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="h-ra" x1="70" y1="42" x2="85" y2="55" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="h-ll" x1="70" y1="62" x2="55" y2="78" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+      <line id="h-rl" x1="70" y1="62" x2="85" y2="78" stroke="var(--red)" stroke-width="2.5" opacity="0"/>
+    </svg>
+    <div id="wrong-letters"></div>
+    <div id="word-display"></div>
+    <div id="word-keyboard"></div>
+    <button class="btn btn-d btn-full" onclick="initWord()" style="margin-top:6px">🔄 Kata Baru</button>
+  </div>
+</div>
+
+<!-- ═══ 6. FLAPPY ═══ -->
+<div id="screen-flappy" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">🐦 Flappy Bird</div><div class="gsub">Tap untuk terbang!</div></div>
+      <div><span class="badge">🏆 <span id="flappy-best">0</span></span></div>
+    </div>
+    <div id="flappy-wrap">
+      <canvas id="flappy-c" height="220"></canvas>
+      <div id="flappy-overlay">
+        <div style="font-size:36px">🐦</div>
+        <div style="font-size:16px;font-weight:700">TAP UNTUK MULAI</div>
+        <div id="flappy-overlay-score" style="color:var(--acc2);font-size:18px;font-weight:700;display:none"></div>
+        <button class="btn btn-p" onclick="startFlappy()">▶ MAIN</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)">Tap layar / tombol</span>
+      <span class="badge">Score: <span id="flappy-score">0</span></span>
+    </div>
+    <button class="btn btn-p btn-full" onclick="flappyJump()" ontouchstart="e=>{e.preventDefault();flappyJump()}">▲ FLY</button>
+  </div>
+</div>
+
+<!-- ═══ 7. MEMORY CARD ═══ -->
+<div id="screen-mem" class="screen">
+  <div class="gcard">
+    <div class="score-row">
+      <div><div class="gtitle">🃏 Memory Card</div><div class="gsub">Cari pasangan kartu!</div></div>
+      <div id="mem-moves">0 langkah</div>
+    </div>
+    <div id="mem-msg">Temukan semua pasangan!</div>
+    <div id="mem-grid"></div>
+    <button class="btn btn-d btn-full" onclick="initMem()">🔄 Acak Ulang</button>
   </div>
 </div>
 
 <script>
-const FRUITS = ['🍎','🍊','🍋','🍇','🍓','🍑','🍍','🥝','🍉','🫐','🥭','🍒'];
-const TOTAL = 12;
-
-const DIFF_BOMBS = { mudah: 1, normal: 1, hard: 2 };
-
-const ROAST_LOSE = [
-  "bro nyentuh bom kaya nyentuh mantan, ga bisa nahan diri 💀",
-  "reflek lo lebih lambat dari sinyal 3G di daerah terpencil bro",
-  "lu tadi milih pake feeling? feeling lu lagi error kayaknya",
-  "bom segitu doang kena, tolong jangan jadi jihandak ya bro 😭",
-  "kira-kira ada ga sih skill issue clinic buat kasus lu ini?"
-];
-
-const ROAST_WIN = [
-  "oke oke, lucky boy nih. tapi coba yang susah dulu baru ngomong 😤",
-  "menang sih, tapi muka lu waktu milih tadi pucet banget bro haha",
-  "jangan ge-er dulu, bom-nya aja yang kasian ga kesentuh 💅",
-  "wih selamat, tapi tetep aja muka lu pas nunggu reveal ngeri banget",
-  "lu menang... kali ini. besok belum tentu, bro 😂"
-];
-
-let board = [], revealed = [];
-let score = 0, streak = 0, bestStreak = 0;
-let wins = 0, losses = 0, round = 1;
-let gameOver = false, currentDiff = 'mudah';
-
-function setDiff(d, btn) {
-  currentDiff = d;
-  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  startGame();
+// ── NAV ──
+function showGame(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'dino') resizeDino();
+  if (id === 'flappy') resizeFlappy();
 }
 
-function startGame() {
-  gameOver = false;
-  board = [];
-  revealed = new Array(TOTAL).fill(false);
+// ══════════════════════════════════════
+// 1. TEBAK BOM
+// ══════════════════════════════════════
+let bomScore = 0, bomBombs = [], bomRevealed = [], bomCells = 25, bomActive = false;
 
-  const bombs = DIFF_BOMBS[currentDiff];
-  const usedFruits = [];
-
-  for (let i = 0; i < TOTAL; i++) {
-    let f;
-    do { f = FRUITS[Math.floor(Math.random() * FRUITS.length)]; } while (usedFruits.includes(f));
-    usedFruits.push(f);
-    board.push({ type: 'fruit', emoji: f });
+function initBom(bombs) {
+  bomBombs = [];
+  bomRevealed = new Array(bomCells).fill(false);
+  bomActive = true;
+  while (bomBombs.length < bombs) {
+    const r = Math.floor(Math.random() * bomCells);
+    if (!bomBombs.includes(r)) bomBombs.push(r);
   }
-
-  const slots = [...Array(TOTAL).keys()];
-  for (let i = 0; i < bombs; i++) {
-    const ri = Math.floor(Math.random() * slots.length);
-    board[slots[ri]].type = 'bomb';
-    board[slots[ri]].emoji = '💣';
-    slots.splice(ri, 1);
-  }
-
-  updateUI();
-  renderGrid();
-}
-
-function renderGrid() {
-  const grid = document.getElementById('grid');
+  const grid = document.getElementById('bom-grid');
   grid.innerHTML = '';
-  for (let i = 0; i < TOTAL; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'cell';
-    cell.id = 'cell-' + i;
-    cell.innerHTML = `<span class="cell-num">${i + 1}</span>`;
-    cell.onclick = () => pick(i);
-    grid.appendChild(cell);
+  for (let i = 0; i < bomCells; i++) {
+    const c = document.createElement('div');
+    c.className = 'bom-cell';
+    c.onclick = () => clickBom(i);
+    grid.appendChild(c);
   }
+  document.getElementById('bom-msg').textContent = `${bombs} bom tersembunyi — pilih dengan hati-hati!`;
 }
 
-function pick(i) {
-  if (gameOver || revealed[i]) return;
-  revealed[i] = true;
-  const cell = document.getElementById('cell-' + i);
-  cell.innerHTML = `<span class="cell-num">${i + 1}</span>${board[i].emoji}`;
-
-  if (board[i].type === 'bomb') {
-    cell.classList.add('revealed', 'bomb');
-    gameOver = true;
-    // reset skor kalo kena bom
-    score = 0;
-    streak = 0;
-    losses++;
-    updateUI();
-    setTimeout(() => {
-      revealAll();
-      setTimeout(() => showModal('lose'), 350);
-    }, 300);
+function clickBom(i) {
+  if (!bomActive || bomRevealed[i]) return;
+  bomRevealed[i] = true;
+  const cells = document.querySelectorAll('.bom-cell');
+  cells[i].classList.add('revealed');
+  if (bomBombs.includes(i)) {
+    cells[i].classList.add('bomb');
+    cells[i].textContent = '💣';
+    bomActive = false;
+    bomBombs.forEach(b => { cells[b].classList.add('bomb'); cells[b].textContent = '💣'; });
+    document.getElementById('bom-msg').textContent = '💥 BOM! Game over!';
   } else {
-    cell.classList.add('revealed', 'fruit');
-    const mul = currentDiff === 'hard' ? 3 : currentDiff === 'normal' ? 2 : 1;
-    score += 10 * mul;
-    streak++;
-    if (streak > bestStreak) bestStreak = streak;
-    round++;
-    updateUI();
-
-    const fruitsLeft = board.filter((b, idx) => b.type === 'fruit' && !revealed[idx]).length;
-    if (fruitsLeft === 0) {
-      gameOver = true;
-      wins++;
-      setTimeout(() => showModal('win'), 350);
+    cells[i].classList.add('safe');
+    cells[i].textContent = '✅';
+    bomScore++;
+    document.getElementById('bom-score').textContent = bomScore;
+    const safe = bomCells - bomBombs.length;
+    const revealed = bomRevealed.filter((r,i) => r && !bomBombs.includes(i)).length;
+    if (revealed === safe) {
+      bomActive = false;
+      document.getElementById('bom-msg').textContent = '🎉 Selamat! Semua aman!';
+    } else {
+      document.getElementById('bom-msg').textContent = `✅ Aman! ${safe - revealed} kotak tersisa`;
     }
   }
 }
+initBom(3);
 
-function revealAll() {
-  for (let i = 0; i < TOTAL; i++) {
-    if (!revealed[i]) {
-      const cell = document.getElementById('cell-' + i);
-      cell.innerHTML = `<span class="cell-num">${i + 1}</span>${board[i].emoji}`;
-      cell.classList.add('revealed', 'dimmed');
-      if (board[i].type === 'bomb') cell.classList.add('bomb');
-      else cell.classList.add('fruit');
+// ══════════════════════════════════════
+// 2. DINO
+// ══════════════════════════════════════
+const dc = document.getElementById('dino-c');
+const dctx = dc.getContext('2d');
+let DW, DH, DGND;
+let dinoState = 'idle', dinoScore = 0, dinoBest = 0, dinoSpeed = 4, dinoFrame = 0;
+let dinoObstacles = [], dinoClouds = [], dinoSpawnT = 0, dinoSpawnG = 90, dinoRaf = null;
+const D = { x:50, y:0, w:22, h:28, vy:0, onGround:true, legF:0, legT:0 };
+
+function resizeDino() {
+  DW = dc.offsetWidth; DH = 150; dc.width = DW; dc.height = DH; DGND = DH - 30;
+  D.y = DGND;
+}
+
+function dinoJump() {
+  if (dinoState === 'idle') { startDino(); return; }
+  if (dinoState === 'running' && D.onGround) { D.vy = -11; D.onGround = false; }
+}
+
+function startDino() {
+  resizeDino();
+  dinoScore = 0; dinoSpeed = 4; dinoFrame = 0;
+  dinoObstacles = []; dinoSpawnT = 0; dinoSpawnG = 90;
+  D.y = DGND; D.vy = 0; D.onGround = true;
+  dinoClouds = [{x:DW*.3,y:20},{x:DW*.7,y:35}];
+  dinoState = 'running';
+  document.getElementById('dino-overlay').classList.add('hidden');
+  cancelAnimationFrame(dinoRaf);
+  dinoLoop();
+}
+
+function dinoLoop() {
+  dctx.clearRect(0, 0, DW, DH);
+  dinoClouds.forEach(c => {
+    dctx.fillStyle = 'rgba(255,255,255,0.05)';
+    dctx.beginPath(); dctx.ellipse(c.x, c.y, 25, 8, 0, 0, Math.PI*2); dctx.fill();
+    c.x -= dinoSpeed * 0.3; if (c.x < -30) c.x = DW + 30;
+  });
+  dctx.strokeStyle = '#4ecca3'; dctx.lineWidth = 2;
+  dctx.beginPath(); dctx.moveTo(0, DGND+D.h); dctx.lineTo(DW, DGND+D.h); dctx.stroke();
+
+  dinoSpawnT++;
+  if (dinoSpawnT >= dinoSpawnG) {
+    dinoObstacles.push({ x: DW+10, w:14, h:24+Math.random()*16 });
+    dinoSpawnT = 0; dinoSpawnG = Math.max(40, 70 + Math.random()*50 - dinoSpeed*3);
+  }
+  dinoObstacles.forEach(o => {
+    o.x -= dinoSpeed;
+    dctx.fillStyle = '#4ecca3';
+    dctx.fillRect(o.x, DGND+D.h-o.h, o.w, o.h);
+    dctx.fillStyle = '#3ab89a';
+    dctx.fillRect(o.x+2, DGND+D.h-o.h+4, 3, o.h-4);
+    dctx.fillStyle = '#4ecca3';
+    dctx.fillRect(o.x-5, DGND+D.h-o.h+8, 7, 4);
+  });
+  const dh = {x:D.x+4, y:D.y-D.h+4, w:14, h:D.h-6};
+  for (const o of dinoObstacles) {
+    const oh = {x:o.x+2, y:DGND+D.h-o.h, w:o.w-4, h:o.h};
+    if (dh.x<oh.x+oh.w && dh.x+dh.w>oh.x && dh.y<oh.y+oh.h && dh.y+dh.h>oh.y) { dinoDie(); return; }
+  }
+  dinoObstacles = dinoObstacles.filter(o => o.x+o.w > 0);
+
+  D.vy += 0.55; D.y += D.vy;
+  if (D.y >= DGND) { D.y = DGND; D.vy = 0; D.onGround = true; }
+  if (D.onGround) { D.legT++; if (D.legT>7){D.legF^=1;D.legT=0;} }
+
+  const x=D.x, y=D.y-D.h;
+  dctx.fillStyle='#e94560';
+  dctx.fillRect(x,y+6,20,14); dctx.fillRect(x+10,y,12,10); dctx.fillRect(x-4,y+8,6,4);
+  dctx.fillStyle='#fff'; dctx.fillRect(x+18,y+2,3,3);
+  dctx.fillStyle='#1a1a2e'; dctx.fillRect(x+19,y+3,2,2);
+  dctx.fillStyle='#e94560';
+  if(D.onGround){
+    dctx.fillRect(x+2,y+20,5,D.legF?6:8); dctx.fillRect(x+11,y+20,5,D.legF?8:6);
+  } else { dctx.fillRect(x+2,y+20,5,5); dctx.fillRect(x+11,y+20,5,5); }
+
+  dinoScore += dinoSpeed * 0.05;
+  if (dinoScore > dinoBest) dinoBest = dinoScore;
+  dinoSpeed = 4 + Math.floor(dinoScore/200) * 0.5;
+  if (dinoSpeed > 12) dinoSpeed = 12;
+  document.getElementById('dino-score').textContent = Math.floor(dinoScore);
+  document.getElementById('dino-best').textContent = Math.floor(dinoBest);
+  document.getElementById('dino-speed-label').textContent = `SPEED ${(dinoSpeed/4).toFixed(1)}x`;
+  dinoFrame++;
+  dinoRaf = requestAnimationFrame(dinoLoop);
+}
+
+function dinoDie() {
+  dinoState = 'dead'; cancelAnimationFrame(dinoRaf);
+  const ol = document.getElementById('dino-overlay');
+  document.getElementById('dino-overlay-icon').textContent = '💀';
+  document.getElementById('dino-overlay-title').textContent = 'GAME OVER';
+  document.getElementById('dino-overlay-score').style.display = 'block';
+  document.getElementById('dino-overlay-score').textContent = `Score: ${Math.floor(dinoScore)}`;
+  document.getElementById('dino-start-btn').textContent = '↺ MAIN LAGI';
+  ol.classList.remove('hidden');
+}
+
+dc.addEventListener('click', dinoJump);
+dc.addEventListener('touchstart', e => { e.preventDefault(); dinoJump(); }, {passive:false});
+document.getElementById('dino-jump-btn').addEventListener('touchstart', e => { e.preventDefault(); dinoJump(); }, {passive:false});
+
+// ══════════════════════════════════════
+// 3. GACHA SLOT
+// ══════════════════════════════════════
+const GACHA_ITEMS = [
+  {e:'⭐',n:'Bintang',r:'common',coin:5},
+  {e:'🍀',n:'Semanggi',r:'common',coin:5},
+  {e:'🎵',n:'Nada',r:'common',coin:5},
+  {e:'🌙',n:'Bulan',r:'rare',coin:15},
+  {e:'💎',n:'Berlian',r:'rare',coin:15},
+  {e:'🔥',n:'Api',r:'rare',coin:15},
+  {e:'🌈',n:'Pelangi',r:'epic',coin:40},
+  {e:'⚡',n:'Petir',r:'epic',coin:40},
+  {e:'🐉',n:'Naga',r:'legend',coin:100},
+  {e:'👑',n:'Mahkota',r:'legend',coin:100},
+];
+const RARITY_WEIGHT = {common:60,rare:30,epic:8,legend:2};
+let gCoins = 1000, gCollection = {}, gSpinning = false;
+
+function weightedPick() {
+  const pool = [];
+  GACHA_ITEMS.forEach(item => { for(let i=0;i<RARITY_WEIGHT[item.r];i++) pool.push(item); });
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function doSpin(cost) {
+  if (gSpinning || gCoins < cost) {
+    document.getElementById('gacha-result').textContent = gCoins < cost ? '🪙 Koin tidak cukup!' : '';
+    return;
+  }
+  gCoins -= cost;
+  document.getElementById('gacha-coins').textContent = `🪙 ${gCoins}`;
+  gSpinning = true;
+  let frames = 0, maxF = 20;
+  const boxes = [0,1,2].map(i => document.getElementById('s'+i));
+  boxes.forEach(b => b.classList.add('spin'));
+  const iv = setInterval(() => {
+    boxes.forEach(b => b.textContent = GACHA_ITEMS[Math.floor(Math.random()*GACHA_ITEMS.length)].e);
+    frames++;
+    if (frames >= maxF) {
+      clearInterval(iv);
+      boxes.forEach(b => b.classList.remove('spin'));
+      const result = [weightedPick(), weightedPick(), weightedPick()];
+      boxes.forEach((b,i) => b.textContent = result[i].e);
+      const main = result[0];
+      gCollection[main.n] = (gCollection[main.n]||0) + 1;
+      gCoins += main.coin;
+      document.getElementById('gacha-coins').textContent = `🪙 ${gCoins}`;
+      const rClass = `r-${main.r}`;
+      const rLabel = {common:'Common',rare:'Rare',epic:'Epic',legend:'LEGEND!'}[main.r];
+      document.getElementById('gacha-result').innerHTML =
+        `${main.e} <b>${main.n}</b> <span class="rarity-badge ${rClass}">${rLabel}</span> +${main.coin}🪙`;
+      const log = document.getElementById('gacha-log');
+      log.innerHTML = `<div>${main.e} ${main.n} (${rLabel})</div>` + log.innerHTML;
+      updateCollection();
+      gSpinning = false;
+    }
+  }, 60);
+}
+
+function doSpin10() {
+  if (gCoins < 90) { document.getElementById('gacha-result').textContent='🪙 Koin tidak cukup!'; return; }
+  let i = 0;
+  const iv = setInterval(() => { if(i<10){doSpin(0);gCoins-=9;document.getElementById('gacha-coins').textContent=`🪙 ${gCoins}`;i++;} else clearInterval(iv); }, 700);
+}
+
+function updateCollection() {
+  const el = document.getElementById('gacha-collection');
+  const entries = Object.entries(gCollection);
+  if (!entries.length) { el.textContent = 'Belum ada item'; return; }
+  el.innerHTML = entries.map(([n,c]) => {
+    const item = GACHA_ITEMS.find(i=>i.n===n);
+    return `<span style="margin-right:8px;margin-bottom:4px;display:inline-block">${item.e} ${n} ×${c}</span>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+// 4. TIC TAC TOE
+// ══════════════════════════════════════
+let tttBoard=[], tttTurn='X', tttOver=false, tttW=0, tttD=0, tttL=0;
+const WINS=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function initTTT() {
+  tttBoard=new Array(9).fill(''); tttTurn='X'; tttOver=false;
+  const board=document.getElementById('ttt-board'); board.innerHTML='';
+  for(let i=0;i<9;i++){
+    const c=document.createElement('div'); c.className='ttt-cell'; c.dataset.i=i;
+    c.onclick=()=>clickTTT(i); board.appendChild(c);
+  }
+  document.getElementById('ttt-msg').textContent='Giliran kamu (❌)';
+}
+
+function clickTTT(i) {
+  if(tttOver||tttBoard[i]) return;
+  tttBoard[i]='X';
+  render_ttt();
+  const w=checkTTT('X');
+  if(w){tttW++;updateTTT();endTTT(w,'🎉 Kamu menang!');return;}
+  if(tttBoard.every(c=>c)){tttD++;updateTTT();document.getElementById('ttt-msg').textContent='🤝 Seri!';tttOver=true;return;}
+  document.getElementById('ttt-msg').textContent='💭 Komputer berpikir...';
+  setTimeout(()=>{
+    const move=bestMoveTTT();
+    tttBoard[move]='O'; render_ttt();
+    const wo=checkTTT('O');
+    if(wo){tttL++;updateTTT();endTTT(wo,'😢 Komputer menang!');return;}
+    if(tttBoard.every(c=>c)){tttD++;updateTTT();document.getElementById('ttt-msg').textContent='🤝 Seri!';tttOver=true;return;}
+    document.getElementById('ttt-msg').textContent='Giliran kamu (❌)';
+  },500);
+}
+
+function render_ttt(){
+  document.querySelectorAll('.ttt-cell').forEach((c,i)=>{
+    c.textContent=tttBoard[i]==='X'?'❌':tttBoard[i]==='O'?'⭕':'';
+    if(tttBoard[i]) c.classList.add('taken');
+  });
+}
+function checkTTT(p){return WINS.find(w=>w.every(i=>tttBoard[i]===p))||null;}
+function endTTT(combo,msg){
+  tttOver=true;
+  combo.forEach(i=>document.querySelectorAll('.ttt-cell')[i].classList.add('win-cell'));
+  document.getElementById('ttt-msg').textContent=msg;
+}
+function updateTTT(){
+  document.getElementById('ttt-w').textContent=tttW;
+  document.getElementById('ttt-d').textContent=tttD;
+  document.getElementById('ttt-l').textContent=tttL;
+}
+function bestMoveTTT(){
+  // block or win
+  for(const p of['O','X']){
+    for(const w of WINS){
+      const [a,b,c]=w;
+      const cells=[tttBoard[a],tttBoard[b],tttBoard[c]];
+      if(cells.filter(x=>x===p).length===2&&cells.includes('')){
+        return w[cells.indexOf('')];
+      }
+    }
+  }
+  if(tttBoard[4]==='') return 4;
+  const corners=[0,2,6,8].filter(i=>!tttBoard[i]);
+  if(corners.length) return corners[Math.floor(Math.random()*corners.length)];
+  return tttBoard.indexOf('');
+}
+initTTT();
+
+// ══════════════════════════════════════
+// 5. WORD GUESS
+// ══════════════════════════════════════
+const WORDS=[
+  {w:'KUCING',h:'Hewan peliharaan yang suka tidur'},
+  {w:'APEL',h:'Buah merah atau hijau'},
+  {w:'MATAHARI',h:'Bintang terdekat Bumi'},
+  {w:'LAUTAN',h:'Kumpulan air asin yang sangat luas'},
+  {w:'HUJAN',h:'Air yang jatuh dari awan'},
+  {w:'BUKU',h:'Kumpulan halaman berisi tulisan'},
+  {w:'SEPEDA',h:'Kendaraan roda dua tanpa mesin'},
+  {w:'GUNUNG',h:'Daratan tinggi yang menjulang'},
+  {w:'BUNGA',h:'Bagian tanaman yang indah dan harum'},
+  {w:'NAGA',h:'Makhluk mitologi bernapas api'},
+];
+const HPARTS=['h-head','h-body','h-la','h-ra','h-ll','h-rl'];
+let wWord='', wGuessed=[], wWrong=[], wScore=parseInt(localStorage.getItem('wScore')||'0'), wOver=false;
+
+function initWord(){
+  const pick=WORDS[Math.floor(Math.random()*WORDS.length)];
+  wWord=pick.w; wGuessed=[]; wWrong=[]; wOver=false;
+  HPARTS.forEach(id=>document.getElementById(id).style.opacity='0');
+  document.getElementById('wrong-letters').textContent='';
+  document.getElementById('word-score').textContent=wScore;
+  renderWord(); buildKeyboard();
+}
+
+function renderWord(){
+  document.getElementById('word-display').textContent=
+    wWord.split('').map(l=>wGuessed.includes(l)?l:'_').join(' ');
+}
+
+function buildKeyboard(){
+  const kb=document.getElementById('word-keyboard'); kb.innerHTML='';
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(l=>{
+    const b=document.createElement('button'); b.className='key-btn'; b.textContent=l;
+    if(wGuessed.includes(l)||wWrong.includes(l)){
+      b.disabled=true;
+      b.classList.add(wWrong.includes(l)?'used-wrong':'used-right');
+    }
+    b.onclick=()=>guessWord(l);
+    kb.appendChild(b);
+  });
+}
+
+function guessWord(l){
+  if(wOver) return;
+  if(wWord.includes(l)){
+    wGuessed.push(l);
+    renderWord();
+    if(wWord.split('').every(c=>wGuessed.includes(c))){
+      wScore++; localStorage.setItem('wScore',wScore);
+      document.getElementById('word-score').textContent=wScore;
+      document.getElementById('wrong-letters').textContent='🎉 Benar! '+wWord;
+      wOver=true;
+    }
+  } else {
+    wWrong.push(l);
+    document.getElementById('wrong-letters').textContent='❌ '+wWrong.join(' ');
+    document.getElementById(HPARTS[wWrong.length-1]).style.opacity='1';
+    if(wWrong.length>=6){
+      document.getElementById('word-display').textContent=wWord.split('').join(' ');
+      document.getElementById('wrong-letters').textContent='💀 '+wWord;
+      wOver=true;
+    }
+  }
+  buildKeyboard();
+}
+initWord();
+
+// ══════════════════════════════════════
+// 6. FLAPPY BIRD
+// ══════════════════════════════════════
+const fc=document.getElementById('flappy-c');
+const fctx=fc.getContext('2d');
+let FW, FH;
+let fState='idle', fScore=0, fBest=0, fRaf2=null;
+let fBird={x:60,y:0,vy:0,r:12};
+let fPipes=[], fPipeT=0, fGravity=0.4, fJumpV=-7, fPipeSpd=2.5;
+
+function resizeFlappy(){
+  FW=fc.offsetWidth; FH=220; fc.width=FW; fc.height=FH;
+  fBird.y=FH/2;
+}
+
+function flappyJump(){
+  if(fState==='idle'){startFlappy();return;}
+  if(fState==='running') fBird.vy=fJumpV;
+}
+
+function startFlappy(){
+  resizeFlappy();
+  fScore=0; fPipes=[]; fPipeT=0;
+  fBird={x:60,y:FH/2,vy:0,r:12};
+  fState='running';
+  document.getElementById('flappy-overlay').classList.add('hidden');
+  cancelAnimationFrame(fRaf2);
+  fLoop();
+}
+
+function fLoop(){
+  fctx.fillStyle='#0f3460'; fctx.fillRect(0,0,FW,FH);
+  // clouds
+  fctx.fillStyle='rgba(255,255,255,0.06)';
+  [[FW*.2,30],[FW*.6,20],[FW*.85,50]].forEach(([x,y])=>{
+    fctx.beginPath(); fctx.ellipse(x,y,30,10,0,0,Math.PI*2); fctx.fill();
+  });
+  // pipes
+  fPipeT++;
+  if(fPipeT>80){
+    const gap=FH*0.35, gapY=60+Math.random()*(FH-gap-80);
+    fPipes.push({x:FW+10,gapY,gap});
+    fPipeT=0;
+  }
+  fPipes.forEach(p=>{
+    p.x-=fPipeSpd+fScore*0.05;
+    fctx.fillStyle='#4ecca3';
+    fctx.fillRect(p.x,0,40,p.gapY);
+    fctx.fillRect(p.x,p.gapY+p.gap,40,FH);
+    fctx.fillStyle='#3ab89a';
+    fctx.fillRect(p.x-4,p.gapY-16,48,16);
+    fctx.fillRect(p.x-4,p.gapY+p.gap,48,16);
+    // score
+    if(!p.passed && p.x+40<fBird.x){p.passed=true;fScore++;document.getElementById('flappy-score').textContent=fScore;if(fScore>fBest){fBest=fScore;document.getElementById('flappy-best').textContent=fBest;}}
+    // collision
+    if(fBird.x+fBird.r>p.x+4 && fBird.x-fBird.r<p.x+44){
+      if(fBird.y-fBird.r<p.gapY || fBird.y+fBird.r>p.gapY+p.gap){flappyDie();return;}
+    }
+  });
+  fPipes=fPipes.filter(p=>p.x+40>0);
+  // bird
+  fBird.vy+=fGravity; fBird.y+=fBird.vy;
+  if(fBird.y+fBird.r>FH||fBird.y-fBird.r<0){flappyDie();return;}
+  fctx.save();
+  fctx.translate(fBird.x,fBird.y);
+  fctx.rotate(Math.min(Math.max(fBird.vy*0.05,-0.5),0.5));
+  fctx.font='22px serif'; fctx.textAlign='center'; fctx.textBaseline='middle';
+  fctx.fillText('🐦',0,0);
+  fctx.restore();
+  fRaf2=requestAnimationFrame(fLoop);
+}
+
+function flappyDie(){
+  fState='dead'; cancelAnimationFrame(fRaf2);
+  const ol=document.getElementById('flappy-overlay');
+  ol.querySelector('div').textContent='💀';
+  ol.querySelectorAll('div')[1].textContent='GAME OVER';
+  const sc=document.getElementById('flappy-overlay-score');
+  sc.style.display='block'; sc.textContent=`Score: ${fScore}`;
+  ol.querySelector('button').textContent='↺ MAIN LAGI';
+  ol.classList.remove('hidden');
+}
+
+fc.addEventListener('click',flappyJump);
+fc.addEventListener('touchstart',e=>{e.preventDefault();flappyJump();},{passive:false});
+document.querySelector('#screen-flappy .btn-full').addEventListener('touchstart',e=>{e.preventDefault();flappyJump();},{passive:false});
+
+// ══════════════════════════════════════
+// 7. MEMORY CARD
+// ══════════════════════════════════════
+const MEM_EMOJIS=['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼'];
+let memCards=[], memFlipped=[], memMatched=0, memMoves=0, memLock=false;
+
+function initMem(){
+  memMatched=0; memMoves=0; memLock=false; memFlipped=[];
+  document.getElementById('mem-msg').textContent='Temukan semua pasangan!';
+  document.getElementById('mem-moves').textContent='0 langkah';
+  const pairs=[...MEM_EMOJIS,...MEM_EMOJIS].sort(()=>Math.random()-.5);
+  const grid=document.getElementById('mem-grid'); grid.innerHTML='';
+  memCards=pairs.map((e,i)=>{
+    const card=document.createElement('div'); card.className='mem-card'; card.dataset.i=i;
+    card.innerHTML=`<div class="mem-front">❓</div><div class="mem-back">${e}</div>`;
+    card.dataset.emoji=e;
+    card.onclick=()=>flipMem(i);
+    grid.appendChild(card);
+    return card;
+  });
+}
+
+function flipMem(i){
+  if(memLock||memCards[i].classList.contains('flipped')||memCards[i].classList.contains('matched')) return;
+  memCards[i].classList.add('flipped');
+  memFlipped.push(i);
+  if(memFlipped.length===2){
+    memMoves++;
+    document.getElementById('mem-moves').textContent=`${memMoves} langkah`;
+    memLock=true;
+    const [a,b]=memFlipped;
+    if(memCards[a].dataset.emoji===memCards[b].dataset.emoji){
+      memCards[a].classList.add('matched'); memCards[b].classList.add('matched');
+      memMatched++;
+      memFlipped=[]; memLock=false;
+      if(memMatched===8) document.getElementById('mem-msg').textContent=`🎉 Selesai dalam ${memMoves} langkah!`;
+    } else {
+      setTimeout(()=>{
+        memCards[a].classList.remove('flipped'); memCards[b].classList.remove('flipped');
+        memFlipped=[]; memLock=false;
+      },900);
     }
   }
 }
+initMem();
 
-function updateUI() {
-  document.getElementById('score').textContent = score;
-  document.getElementById('streak').textContent = streak;
-  document.getElementById('wins').textContent = wins;
-  document.getElementById('losses').textContent = losses;
-  document.getElementById('best-streak').textContent = bestStreak;
-  document.getElementById('bomb-count').textContent = DIFF_BOMBS[currentDiff];
-  document.getElementById('round').textContent = round;
-  const fl = board.filter((b, idx) => b.type === 'fruit' && !revealed[idx]).length;
-  document.getElementById('fruit-left').textContent = fl;
-}
-
-function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-
-function showModal(type) {
-  const found = board.filter((b, idx) => b.type === 'fruit' && revealed[idx]).length;
-
-  if (type === 'win') {
-    document.getElementById('modal-emoji').textContent = '🏆';
-    document.getElementById('modal-title').textContent = 'MENANG!';
-    document.getElementById('modal-roast').textContent = rand(ROAST_WIN);
-  } else {
-    document.getElementById('modal-emoji').textContent = '💥';
-    document.getElementById('modal-title').textContent = 'BOOM!';
-    document.getElementById('modal-roast').textContent = rand(ROAST_LOSE);
+// keyboard dino
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){e.preventDefault();
+    if(document.getElementById('screen-dino').classList.contains('active')) dinoJump();
+    if(document.getElementById('screen-flappy').classList.contains('active')) flappyJump();
   }
-
-  document.getElementById('modal-score').textContent = score;
-  document.getElementById('modal-streak').textContent = streak;
-  document.getElementById('modal-fruits').textContent = found;
-  document.getElementById('overlay').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('overlay').classList.remove('show');
-}
-
-startGame();
+});
 </script>
 </body>
-</html>
+    </html>
